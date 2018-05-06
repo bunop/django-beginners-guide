@@ -21,7 +21,7 @@
 
     {% if field.help_text %}
       <small class="form-text text-muted">
-        {{ field.help_text }}
+        {{ field.help_text|safe }} <!-- django threats all HTML as text. We can trust our code -->
       </small>
     {% endif %}
   </div>
