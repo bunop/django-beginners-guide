@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .forms import NewTopicForm
-from .models import Board, Post
+from .models import Board, Post, Topic
 
 
 # Create your views here.
@@ -43,3 +43,8 @@ def new_topic(request, pk):
         form = NewTopicForm()
 
     return render(request, 'new_topic.html', {'board': board, 'form': form})
+
+
+def topic_posts(request, pk, topic_pk):
+    topic = get_object_or_404(Topic, board__pk=pk, pk=topic_pk)
+    return render(request, 'topic_posts.html', {'topic': topic})
