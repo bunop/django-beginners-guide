@@ -1,4 +1,5 @@
 
+from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -14,7 +15,17 @@ def home(request):
 
 def board_topics(request, pk):
     board = get_object_or_404(Board, pk=pk)
-    return render(request, 'topics.html', {'board': board})
+
+    # Annotate: generate a new “column” on the fly. This new column will be
+    # translated into a property,
+    topics = board.topics.order_by(
+        '-last_updated').annotate(
+            replies=Count('posts') - 1)
+
+    return render(
+        request,
+        'topics.html',
+        {'board': board, 'topics': topics})
 
 
 @login_required
