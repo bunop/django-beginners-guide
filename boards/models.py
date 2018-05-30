@@ -15,7 +15,8 @@ class Board(models.Model):
         return Post.objects.filter(topic__board=self).count()
 
     def get_last_post(self):
-        return Post.objects.filter(topic__board=self).order_by('-created_at').first()
+        return Post.objects.filter(
+            topic__board=self).order_by('-created_at').first()
 
 
 class Topic(models.Model):
@@ -23,6 +24,7 @@ class Topic(models.Model):
     last_updated = models.DateTimeField(auto_now_add=True)
     board = models.ForeignKey(Board, related_name='topics')
     starter = models.ForeignKey(User, related_name='topics')
+    views = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.subject
