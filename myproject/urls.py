@@ -21,7 +21,7 @@ from accounts import views as accounts_views
 from boards import views
 
 urlpatterns = [
-    url(r'^$', views.home, name='home'),
+    url(r'^$', views.BoardListView.as_view(), name='home'),
     url(r'^signup/$', accounts_views.signup, name='signup'),
     url(r'^login/$',
         auth_views.LoginView.as_view(
@@ -39,7 +39,8 @@ urlpatterns = [
         auth_views.PasswordResetDoneView.as_view(
             template_name='password_reset_done.html'),
         name='password_reset_done'),
-    url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+    url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}'
+        '-[0-9A-Za-z]{1,20})/$',
         auth_views.PasswordResetConfirmView.as_view(
             template_name='password_reset_confirm.html'),
         name='password_reset_confirm'),
@@ -63,5 +64,8 @@ urlpatterns = [
     url(r'^boards/(?P<pk>\d+)/topics/(?P<topic_pk>\d+)/reply/$',
         views.reply_topic,
         name='reply_topic'),
+    url(r'^boards/(?P<pk>\d+)/topics/(?P<topic_pk>\d+)/posts/'
+        '(?P<post_pk>\d+)/edit/$',
+        views.PostUpdateView.as_view(), name='edit_post'),
     url(r'^admin/', admin.site.urls),
 ]

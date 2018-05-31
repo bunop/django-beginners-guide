@@ -2,15 +2,20 @@
 from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import UpdateView, ListView
+from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .forms import NewTopicForm, PostForm
 from .models import Board, Post, Topic
 
 
 # Create your views here.
-def home(request):
-    boards = Board.objects.all()
-    return render(request, 'home.html', {'boards': boards})
+class BoardListView(ListView):
+    model = Board
+    context_object_name = 'boards'
+    template_name = 'home.html'
 
 
 def board_topics(request, pk):
@@ -18,9 +23,25 @@ def board_topics(request, pk):
 
     # Annotate: generate a new “column” on the fly. This new column will be
     # translated into a property,
-    topics = board.topics.order_by(
+    queryset = board.topics.order_by(
         '-last_updated').annotate(
             replies=Count('posts') - 1)
+
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(queryset, 20)
+
+    try:
+        topics = paginator.page(page)
+
+    except PageNotAnInteger:
+        # fallback to the first page
+        topics = paginator.page(1)
+
+    except EmptyPage:
+        # probably the user tried to add a page number
+        # in the url, so we fallback to the last page
+        topics = paginator.page(paginator.num_pages)
 
     return render(
         request,
@@ -78,3 +99,29 @@ def reply_topic(request, pk, topic_pk):
         form = PostForm()
 
     return render(request, 'reply_topic.html', {'topic': topic, 'form': form})
+
+
+# dispatch is an internal method Django use (defined inside the View class)
+@method_decorator(login_required, name='dispatch')
+class PostUpdateView(UpdateView):
+    model = Post
+    fields = ('message', )
+    template_name = 'edit_post.html'
+    #  will be used to identify the name of the keyword argument used to
+    # retrieve the Post object
+    pk_url_kwarg = 'post_pk'
+    context_object_name = 'post'
+
+    def get_queryset(self):
+        # we are reusing the get_queryset method from the parent class
+        queryset = super().get_queryset()
+        # we are adding an extra filter to the queryset,
+        return queryset.filter(created_by=self.request.user)
+
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.updated_by = self.request.user
+        post.updated_at = timezone.now()
+        post.save()
+        return redirect(
+            'topic_posts', pk=post.topic.board.pk, topic_pk=post.topic.pk)

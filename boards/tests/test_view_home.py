@@ -2,7 +2,7 @@
 from django.urls import resolve, reverse
 from django.test import TestCase
 
-from ..views import home
+from ..views import BoardListView
 from ..models import Board
 
 
@@ -19,7 +19,7 @@ class HomeTests(TestCase):
 
     def test_home_url_resolves_home_view(self):
         view = resolve('/')
-        self.assertEquals(view.func, home)
+        self.assertEquals(view.func.view_class, BoardListView)
 
     def test_home_view_contains_link_to_topics_page(self):
         board_topics_url = reverse(
