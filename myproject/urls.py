@@ -48,6 +48,9 @@ urlpatterns = [
         auth_views.PasswordResetCompleteView.as_view(
             template_name='password_reset_complete.html'),
         name='password_reset_complete'),
+    url(r'^settings/account/$',
+        accounts_views.UserUpdateView.as_view(),
+        name='my_account'),
     url(r'^settings/password/$',
         auth_views.PasswordChangeView.as_view(
             template_name='password_change.html'),
